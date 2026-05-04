@@ -146,7 +146,7 @@ nibabel==5.3.2
 nilearn==0.11.1
 ninja==1.11.1.4
 nltk==3.9.1
-numpy==1.26.4
+numpy>=2.1.0
 olefile==0.47
 omegaconf==2.3.0
 onnx==1.17.0
@@ -166,7 +166,6 @@ pickleshare==0.7.5
 pikepdf==9.5.2
 pillow==11.1.0
 pip==25.0
-pipreqs==0.5.0
 platformdirs==4.3.7
 pluggy==1.5.0
 portalocker==2.10.1

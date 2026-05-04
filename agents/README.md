@@ -1,7 +1,5 @@
 <div align="center">
  
-![logo](https://github.com/souvikmajumder26/Multi-Agent-Medical-Assistant/blob/main/assets/logo_rounded.png)
-
 <h1 align="center"><strong>🤖 Agent Details :<h6 align="center">All implemented agents have been detailed below</h6></strong></h1>
 
 </div>
