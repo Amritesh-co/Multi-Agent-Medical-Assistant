@@ -10,7 +10,6 @@
 ![Pydantic - Version](https://img.shields.io/badge/Pydantic-2.10+-red?style=for-the-badge&logo=pydantic)
 ![FastAPI - Version](https://img.shields.io/badge/FastAPI-0.115+-teal?style=for-the-badge&logo=fastapi)
 ![Docling - Version](https://img.shields.io/badge/Docling-3.1+-orange?style=for-the-badge&logo=docling)
-![License - Apache](https://img.shields.io/badge/License-Apache-brightgreen.svg?style=for-the-badge)
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg?style=for-the-badge)
 
 </div>
@@ -33,7 +32,6 @@
   - [Manual Installation](#manual-setup)
 - [Usage](#usage)
 - [Contributions](#contributions)
-- [License](#license)
 
 ----
 
@@ -356,11 +354,6 @@ python ingest_rag_data.py --dir ./data/raw
 
 ## 🤝 Contributions  <a name="contributions"></a>
 Contributions are welcome! Please reach out for feature requests and improvements.  
-
----
-
-## ⚖️ License  <a name="license"></a>
-This project is licensed under the **Apache-2.0 License**. See the [LICENSE](LICENSE) file for details.  
 
 ---
 

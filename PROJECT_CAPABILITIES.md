@@ -367,7 +367,6 @@ This project demonstrates:
 ## 📝 Notes
 
 - **Version**: v2.1+ (uses Docling for document parsing)
-- **License**: Apache 2.0
 - **Status**: Active development with contributions welcome
 - **Python Version**: 3.11+
 
