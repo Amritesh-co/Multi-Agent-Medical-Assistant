@@ -34,8 +34,6 @@
 - [Usage](#usage)
 - [Contributions](#contributions)
 - [License](#license)
-- [Citing](#citing)
-- [Contact](#contact)
 
 ----
 
@@ -367,3 +365,14 @@ This project is licensed under the **Apache-2.0 License**. See the [LICENSE](LIC
 ---
 
 ---
+## 📖 Additional Resources
+
+For more detailed information about the project capabilities, features, and technical implementation, see [PROJECT_CAPABILITIES.md](PROJECT_CAPABILITIES.md).
+
+For detailed breakdown of the agentic workflow and agent implementations, see [agents/README.md](agents/README.md).
+
+---
+
+<p align="center">
+  <strong>Built with ❤️ for advancing medical AI assistance</strong>
+</p>
