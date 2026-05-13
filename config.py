@@ -12,24 +12,48 @@ Each llm definition has unique temperature value relevant to the specific class.
 
 import os
 from dotenv import load_dotenv
-from langchain_openai import AzureOpenAIEmbeddings, AzureChatOpenAI
-from langchain_community.chat_models import ChatOllama
-from langchain_community.embeddings import OllamaEmbeddings
+from langchain_openai import ChatOpenAI
+from langchain_community.embeddings import FastEmbedEmbeddings
 
 # Load environment variables from .env file
 load_dotenv()
 
+
+def build_nim_chat_model(temperature: float):
+    return ChatOpenAI(
+        model=os.getenv("NVIDIA_MODEL", "meta/llama-3.1-8b-instruct"),
+        base_url=os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"),
+        openai_api_key=os.getenv("NVIDIA_API_KEY"),
+        temperature=temperature,
+        max_tokens=int(os.getenv("NVIDIA_MAX_TOKENS", "8192")),
+    )
+
+
+def build_nim_vision_model(temperature: float):
+    """Build a vision-capable model for multimodal image analysis."""
+    return ChatOpenAI(
+        model=os.getenv("NVIDIA_VISION_MODEL", "meta/llama-3.2-11b-vision-instruct"),
+        base_url=os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"),
+        openai_api_key=os.getenv("NVIDIA_API_KEY"),
+        temperature=temperature,
+        max_tokens=int(os.getenv("NVIDIA_MAX_TOKENS", "8192")),
+    )
+
+
+def build_embedding_model():
+    return FastEmbedEmbeddings(model_name=os.getenv("NVIDIA_EMBED_MODEL", "BAAI/bge-small-en-v1.5"))
+
 class AgentDecisoinConfig:
     def __init__(self):
-        self.llm = ChatOllama(model="gemma4", temperature=0.1)
+        self.llm = build_nim_chat_model(temperature=0.1)
 
 class ConversationConfig:
     def __init__(self):
-        self.llm = ChatOllama(model="gemma4", temperature=0.7)
+        self.llm = build_nim_chat_model(temperature=0.7)
 
 class WebSearchConfig:
     def __init__(self):
-        self.llm = ChatOllama(model="gemma4", temperature=0.3)
+        self.llm = build_nim_chat_model(temperature=0.3)
         self.context_limit = 20     # include last 20 messsages (10 Q&A pairs) in history
 
 class RAGConfig:
@@ -46,13 +70,12 @@ class RAGConfig:
         self.collection_name = "medical_assistance_rag"  # Ensure a valid name
         self.chunk_size = 512  # Modify based on documents and performance
         self.chunk_overlap = 50  # Modify based on documents and performance
-        # self.embedding_model = "text-embedding-3-large"
-        # Initialize Azure OpenAI Embeddings
-        self.embedding_model = OllamaEmbeddings(model="gemma4")
-        self.llm = ChatOllama(model="gemma4", temperature=0.3)
-        self.summarizer_model = ChatOllama(model="gemma4", temperature=0.5)
-        self.chunker_model = ChatOllama(model="gemma4", temperature=0.0)
-        self.response_generator_model = ChatOllama(model="gemma4", temperature=0.3)
+        # Use local FastEmbed embeddings so chat generation can move fully to NVIDIA NIM.
+        self.embedding_model = build_embedding_model()
+        self.llm = build_nim_chat_model(temperature=0.3)
+        self.summarizer_model = build_nim_chat_model(temperature=0.5)
+        self.chunker_model = build_nim_chat_model(temperature=0.0)
+        self.response_generator_model = build_nim_chat_model(temperature=0.3)
         self.top_k = 5
         self.vector_search_type = 'similarity'  # or 'mmr'
 
@@ -76,12 +99,13 @@ class MedicalCVConfig:
         self.chest_xray_model_path = "./agents/image_analysis_agent/chest_xray_agent/models/covid_chest_xray_model.pth"
         self.skin_lesion_model_path = "./agents/image_analysis_agent/skin_lesion_agent/models/checkpointN25_.pth.tar"
         self.skin_lesion_segmentation_output_path = "./uploads/skin_lesion_output/segmentation_plot.png"
-        self.llm = ChatOllama(model="gemma4", temperature=0.1)
+        self.llm = build_nim_chat_model(temperature=0.1)
+        self.vision_llm = build_nim_vision_model(temperature=0.1)  # Vision model for image analysis
 
 class SpeechConfig:
     def __init__(self):
         self.eleven_labs_api_key = os.getenv("ELEVEN_LABS_API_KEY")  # Replace with your actual key
-        self.eleven_labs_voice_id = "21m00Tcm4TlvDq8ikWAM"    # Default voice ID (Rachel)
+        self.eleven_labs_voice_id = "XrExE9yKIg1WjnnlVkGX"    # Matilda (Knowledgeable, Professional)
 
 class ValidationConfig:
     def __init__(self):

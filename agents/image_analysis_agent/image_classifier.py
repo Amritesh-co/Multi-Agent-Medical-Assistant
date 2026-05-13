@@ -1,16 +1,17 @@
 import os
 import json
 import base64
+import re
 from mimetypes import guess_type
 
-from typing import TypedDict
+from pydantic import BaseModel, Field
 from langchain_core.output_parsers import JsonOutputParser
 
-class ClassificationDecision(TypedDict):
+class ClassificationDecision(BaseModel):
     """Output structure for the decision agent."""
-    image_type: str
-    reasoning: str
-    confidence: float
+    image_type: str = Field(description="The type of the medical image or 'NON-MEDICAL'")
+    reasoning: str = Field(description="The reasoning behind the classification")
+    confidence: float = Field(description="The confidence score of the classification")
 
 class ImageClassifier:
     """Uses GPT-4o Vision to analyze images and determine their type."""
@@ -34,37 +35,51 @@ class ImageClassifier:
         return f"data:{mime_type};base64,{base64_encoded_data}"
     
     def classify_image(self, image_path: str) -> str:
-        """Analyzes the image to classify it as a medical image and determine it's type."""
+        """Analyzes the image to classify it as a medical image and determine its type."""
         print(f"[ImageAnalyzer] Analyzing image: {image_path}")
+        
+        format_instructions = self.json_parser.get_format_instructions()
 
         vision_prompt = [
-            {"role": "system", "content": "You are an expert in medical imaging. Analyze the uploaded image."},
+            {"role": "system", "content": "You are an expert in medical imaging. You must respond with ONLY valid JSON, no other text."},
             {"role": "user", "content": [
                 {"type": "text", "text": (
-                    """
-                    Determine if this is a medical image. If it is, classify it as:
-                    'BRAIN MRI SCAN', 'CHEST X-RAY', 'SKIN LESION', or 'OTHER'. If it's not a medical image, return 'NON-MEDICAL'.
-                    You must provide your answer in JSON format with the following structure:
-                    {{
-                    "image_type": "IMAGE TYPE",
-                    "reasoning": "Your step-by-step reasoning for selecting this agent",
-                    "confidence": 0.95  // Value between 0.0 and 1.0 indicating your confidence in this classification task
-                    }}
-                    """
+                    f"Determine if this is a medical image. If it is, classify it as 'BRAIN MRI SCAN', 'CHEST X-RAY', 'SKIN LESION', or 'OTHER'. If it's not a medical image, return 'NON-MEDICAL'.\n\n{format_instructions}"
                 )},
-                {"type": "image_url", "image_url": {"url": self.local_image_to_data_url(image_path)}}  # Correct format
+                {"type": "image_url", "image_url": {"url": self.local_image_to_data_url(image_path)}}
             ]}
         ]
         
         # Invoke LLM to classify the image
         response = self.vision_model.invoke(vision_prompt)
-
+        response_text = response.content.strip()
+        
+        # Robust JSON extraction
+        extracted = response_text
         try:
-            # Ensure the response is parsed as JSON
-            response_json = self.json_parser.parse(response.content)
-            return response_json  # Returns a dictionary instead of a string
-        except json.JSONDecodeError:
-            print("[ImageAnalyzer] Warning: Response was not valid JSON.")
-            return {"image_type": "unknown", "reasoning": "Invalid JSON response", "confidence": 0.0}
+            # First try direct parsing
+            return self.json_parser.parse(response_text)
+        except Exception:
+            # If direct parsing fails, try to extract JSON block or curly braces
+            
+            # Try to find JSON in markdown blocks first
+            markdown_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', response_text, re.DOTALL)
+            if markdown_match:
+                extracted = markdown_match.group(1)
+            else:
+                # Fallback to finding anything between curly braces
+                json_match = re.search(r'(\{.*\})', response_text, re.DOTALL)
+                if json_match:
+                    extracted = json_match.group(1)
+            
+            # Handle the specific case of double curly braces {{ ... }}
+            if extracted.startswith('{{') and extracted.endswith('}}'):
+                extracted = extracted[1:-1].strip()
 
-        # return response.content.strip().lower()
+            try:
+                return self.json_parser.parse(extracted)
+            except Exception as e:
+                print(f"[ImageAnalyzer] Warning: Failed to parse response: {e}")
+                print(f"[ImageAnalyzer] Original response: {response_text}")
+                print(f"[ImageAnalyzer] Extracted text: {extracted}")
+                return {"image_type": "unknown", "reasoning": f"Failed to parse classification: {str(e)}", "confidence": 0.0}

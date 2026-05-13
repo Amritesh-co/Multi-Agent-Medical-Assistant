@@ -956,7 +956,7 @@
         let isRecording = false;
         let audioContext;
         let currentAudio = null;  // Store a single audio instance
-        let selectedVoiceId = '21m00Tcm4TlvDq8ikWAM'; // Default voice ID (Rachel)
+        let selectedVoiceId = 'XrExE9yKIg1WjnnlVkGX'; // Default voice ID (Matilda)
 
         document.addEventListener('DOMContentLoaded', function() {
             const chatBody = document.getElementById('chat-body');
@@ -1114,19 +1114,35 @@
                     const data = await response.json();
                     
                     // Remove thinking indicator
-                    chatBody.removeChild(thinkingElement);
+                    if (thinkingElement.parentNode === chatBody) {
+                        chatBody.removeChild(thinkingElement);
+                    }
+
+                    if (!response.ok) {
+                        const backendError = data?.detail || data?.response || 'Sorry, there was an error processing your request. Please try again.';
+                        const errorElement = document.createElement('div');
+                        errorElement.className = 'message assistant-message';
+                        errorElement.innerHTML = `
+                            <div class="agent-tag">System</div>
+                            <p class="text-danger">${backendError}</p>
+                        `;
+                        chatBody.appendChild(errorElement);
+                        chatBody.scrollTop = chatBody.scrollHeight;
+                        return;
+                    }
                     
                     // Add response to chat
                     const assistantMessageElement = document.createElement('div');
                     assistantMessageElement.className = 'message assistant-message';
                     
                     // Get clean text for TTS (without markdown)
-                    const cleanText = removeMarkdown(data.response);
+                    const responseText = data?.response || "No response returned by backend.";
+                    const cleanText = removeMarkdown(responseText);
                     
                     // Build HTML content for the response with audio controls
                     let assistantHtml = `
                         <div class="agent-tag">${data.agent}</div>
-                        <div>${marked.parse(data.response)}</div>
+                        <div>${marked.parse(responseText)}</div>
                         <div class="audio-controls mt-2">
                             <button class="btn btn-sm btn-outline-primary play-tts-btn">
                                 <i class="fas fa-play"></i> Play Voice Response
@@ -1263,7 +1279,7 @@
                     
                     displayMessages.push({
                         role: "assistant",
-                        content: data.response,
+                        content: responseText,
                         agent: data.agent,
                         resultImage: data.result_image
                     });
@@ -1275,7 +1291,9 @@
                 } catch (error) {
                     console.error("Error:", error);
                     // Remove thinking indicator
-                    chatBody.removeChild(thinkingElement);
+                    if (thinkingElement.parentNode === chatBody) {
+                        chatBody.removeChild(thinkingElement);
+                    }
                     
                     // Add error message
                     const errorElement = document.createElement('div');

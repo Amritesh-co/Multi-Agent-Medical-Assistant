@@ -9,7 +9,7 @@ class ImageAnalysisAgent:
     """
     
     def __init__(self, config):
-        self.image_classifier = ImageClassifier(vision_model=config.medical_cv.llm)
+        self.image_classifier = ImageClassifier(vision_model=config.medical_cv.vision_llm)
         self.chest_xray_agent = ChestXRayClassification(model_path=config.medical_cv.chest_xray_model_path)
         # self.brain_tumor_agent = BrainTumorAgent()
         self.skin_lesion_agent = SkinLesionSegmentation(model_path=config.medical_cv.skin_lesion_model_path)

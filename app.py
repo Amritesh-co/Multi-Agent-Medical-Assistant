@@ -79,7 +79,7 @@ class QueryRequest(BaseModel):
 
 class SpeechRequest(BaseModel):
     text: str
-    voice_id: str = "EXAMPLE_VOICE_ID"  # Default voice ID
+    voice_id: str = "XrExE9yKIg1WjnnlVkGX"  # Matilda (Default Free Voice)
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
@@ -346,7 +346,7 @@ async def generate_speech(request: SpeechRequest):
         }
         payload = {
             "text": text,
-            "model_id": "eleven_monolingual_v1",
+            "model_id": "eleven_multilingual_v2",
             "voice_settings": {
                 "stability": 0.5,
                 "similarity_boost": 0.5

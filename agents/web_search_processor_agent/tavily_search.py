@@ -16,18 +16,13 @@ class TavilySearchAgent:
 
     def search_tavily(self, query: str) -> str:
         """Perform a general web search using Tavily API."""
-
-        tavily_search = TavilySearchResults(max_results = 5)
-
-        # url = "https://api.tavily.com/search"
-        # params = {
-        #     "api_key": tavily_api_key,
-        #     "query": query,
-        #     "num_results": 5
-        # }
         
+        import os
+        if not os.getenv("TAVILY_API_KEY"):
+            return "Web search is currently unavailable (TAVILY_API_KEY not set)."
+
         try:
-            # response = requests.get(url, params=params)
+            tavily_search = TavilySearchResults(max_results = 5)
             # Strip any surrounding quotes from the query
             query = query.strip('"\'')
             # print("Printing query:", query)

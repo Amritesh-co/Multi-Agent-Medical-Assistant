@@ -43,10 +43,10 @@ class AgentConfig:
     """Configuration settings for the agent decision system."""
     
     # Decision model
-    DECISION_MODEL = "gpt-4o"  # or whichever model you prefer
+    DECISION_MODEL = "ibm/granite-3.0-8b-instruct"
     
     # Vision model for image analysis
-    VISION_MODEL = "gpt-4o"
+    VISION_MODEL = "ibm/granite-3.0-8b-instruct"
     
     # Confidence threshold for responses
     CONFIDENCE_THRESHOLD = 0.85
@@ -75,7 +75,7 @@ class AgentConfig:
     {{
     "agent": "AGENT_NAME",
     "reasoning": "Your step-by-step reasoning for selecting this agent",
-    "confidence": 0.95  // Value between 0.0 and 1.0 indicating your confidence in this decision
+    "confidence": 0.95
     }}
     """
 
@@ -96,11 +96,13 @@ class AgentState(MessagesState):
     insufficient_info: bool  # Flag indicating RAG response has insufficient information
 
 
-class AgentDecision(TypedDict):
+from pydantic import BaseModel, Field
+
+class AgentDecision(BaseModel):
     """Output structure for the decision agent."""
-    agent: str
-    reasoning: str
-    confidence: float
+    agent: str = Field(description="The name of the agent to route the query to")
+    reasoning: str = Field(description="The reasoning behind the routing decision")
+    confidence: float = Field(description="The confidence score of the decision")
 
 
 def create_agent_graph():
